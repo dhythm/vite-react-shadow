@@ -14,7 +14,11 @@ export const ShadowRoot: FC<Props> = ({ children }) => {
         ref.current?.childNodes,
         "click",
         (e) => {
-          console.count("----- shadow root: capturing -----");
+          console.count(
+            `----- shadow root: capturing at ${
+              (e.currentTarget as any)?.nodeName
+            } -----`
+          );
           e.stopImmediatePropagation();
           e.target?.dispatchEvent(
             new MouseEvent("custom-click", {
@@ -31,8 +35,9 @@ export const ShadowRoot: FC<Props> = ({ children }) => {
         "custom-click",
         (e) => {
           if (e.currentTarget === e.target) {
-            console.count("----- custom-click -----");
-            console.log(e.target);
+            console.count(
+              `----- custom-click at ${(e.target as any)?.nodeName} -----`
+            );
             console.log(e);
           }
         }
