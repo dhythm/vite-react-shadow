@@ -4,7 +4,6 @@ import "./App.css";
 import { ShadowDOM } from "./components/ShadowDOM";
 import { ShadowRoot } from "./components/ShadowRoot";
 import { LightRoot } from "./components/LightRoot";
-import { addEventListenerRecursive } from "./utils/addEventListenerRecursive";
 
 function App() {
   const [count, setCount] = useState(0);
