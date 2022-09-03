@@ -66,17 +66,7 @@ const registerEventListenerRecursive = (
       registerEventListenerRecursive(node, type, listener, options);
     }
     if (node.children.length === 0) {
-      const key =
-        Object.keys(node).find((key) => key.match(/^__reactProps\$.+$/)) ?? "";
-      const listenerWithEventHandler = (e: any) => {
-        listener(e);
-        node?.[key]?.onClick();
-      };
-      (node as ChildNode).addEventListener(
-        type,
-        listenerWithEventHandler,
-        options
-      );
+      (node as ChildNode).addEventListener(type, listener, options);
     }
   });
   return () => {
@@ -86,18 +76,7 @@ const registerEventListenerRecursive = (
         registerEventListenerRecursive(node, type, listener, options);
       }
       if (node.children.length === 0) {
-        const key =
-          Object.keys(node).find((key) => key.match(/^__reactProps\$.+$/)) ??
-          "";
-        const listenerWithEventHandler = (e: any) => {
-          listener(e);
-          node?.[key]?.onClick();
-        };
-        (node as ChildNode).removeEventListener(
-          type,
-          listenerWithEventHandler,
-          options
-        );
+        (node as ChildNode).removeEventListener(type, listener, options);
       }
     });
   };

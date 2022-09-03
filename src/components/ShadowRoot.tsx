@@ -41,7 +41,12 @@ export const ShadowRoot: FC<Props> = ({ children }) => {
             console.count(
               `----- custom-click at ${(e.target as any)?.nodeName} -----`
             );
-            console.log(e);
+            const node = (e as any).path[0];
+            const key =
+              Object.keys(node).find((key) =>
+                key.match(/^__reactProps\$.+$/)
+              ) ?? "";
+            node?.[key]?.onClick?.();
           }
         }
       );
