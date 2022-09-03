@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import "./App.css";
 import { ShadowDOM } from "./components/ShadowDOM";
 import { ShadowRoot } from "./components/ShadowRoot";
 import { LightRoot } from "./components/LightRoot";
+import { addEventListenerRecursive } from "./utils/addEventListenerRecursive";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -33,7 +34,13 @@ function App() {
         </p>
         <ShadowDOM>
           <ShadowRoot>
-            <button>shadow Button</button>
+            <button
+              onClick={(e) => {
+                console.log("clicked");
+              }}
+            >
+              shadow Button
+            </button>
           </ShadowRoot>
         </ShadowDOM>
       </LightRoot>
