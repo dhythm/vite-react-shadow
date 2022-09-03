@@ -1,41 +1,48 @@
-import { FC, ReactNode, useEffect } from "react";
-import { addEventListenerRecursive } from "../utils/addEventListenerRecursive";
+import { FC, ReactNode, useEffect, useRef } from "react";
+import { addEventListenerToAllNodes } from "../utils/addEventListenerRecursive";
 
 type Props = {
   children: ReactNode;
 };
 export const ShadowRoot: FC<Props> = ({ children }) => {
+  const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    const listenerCapture = (e: MouseEvent) => {
-      console.count("----- shadow root: capturing -----");
-      if (!!(e.target as any).shadowRoot) {
-        e.stopImmediatePropagation();
-        e.target?.dispatchEvent(
-          new MouseEvent("custom-click", {
-            bubbles: false,
-            cancelable: false,
-            composed: false,
-          })
-        );
-      }
-    };
-    const listenerBubble = (e: MouseEvent) => {
-      console.count("----- shadow root: bubbling -----");
-    };
-    document.addEventListener("click", listenerCapture, true);
-    document.addEventListener("click", listenerBubble);
-    const unsubscribe = addEventListenerRecursive(
-      "custom-click",
-      (e: MouseEvent) => {
-        console.count("----- custom-click -----");
-      }
-    );
+    let unsubscribeCapture: any;
+    let unsubscribeCustom: any;
+    if (ref.current?.childNodes) {
+      unsubscribeCapture = addEventListenerToAllNodes(
+        ref.current?.childNodes,
+        "click",
+        (e) => {
+          console.count("----- shadow root: capturing -----");
+          e.stopImmediatePropagation();
+          e.target?.dispatchEvent(
+            new MouseEvent("custom-click", {
+              bubbles: false,
+              cancelable: false,
+              composed: false,
+            })
+          );
+        },
+        true
+      );
+      unsubscribeCustom = addEventListenerToAllNodes(
+        ref.current?.childNodes,
+        "custom-click",
+        (e) => {
+          if (e.currentTarget === e.target) {
+            console.count("----- custom-click -----");
+            console.log(e.target);
+            console.log(e);
+          }
+        }
+      );
+    }
 
     return () => {
-      document.removeEventListener("click", listenerCapture, true);
-      document.removeEventListener("click", listenerBubble);
-      unsubscribe();
+      unsubscribeCapture?.();
+      unsubscribeCustom?.();
     };
-  });
-  return <>{children}</>;
+  }, [ref]);
+  return <div ref={ref}>{children}</div>;
 };

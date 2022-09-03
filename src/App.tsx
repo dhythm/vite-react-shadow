@@ -34,13 +34,20 @@ function App() {
         </p>
         <ShadowDOM>
           <ShadowRoot>
-            <button
-              onClick={(e) => {
-                console.log("clicked");
-              }}
-            >
-              shadow Button
-            </button>
+            <div>
+              <div>
+                <button
+                  onClick={(e) => {
+                    console.log("clicked");
+                  }}
+                >
+                  shadow Button
+                </button>
+              </div>
+              <div>
+                <p>Hello</p>
+              </div>
+            </div>
           </ShadowRoot>
         </ShadowDOM>
       </LightRoot>
