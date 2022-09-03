@@ -8,20 +8,19 @@ export const ShadowRoot: FC<Props> = ({ children }) => {
   useEffect(() => {
     const listenerCapture = (e: MouseEvent) => {
       console.count("----- shadow root: capturing -----");
-      console.log(e);
-      e.stopImmediatePropagation();
-      // e.target?.dispatchEvent(onclick);
-      e.target?.dispatchEvent(
-        new MouseEvent("custom-click", {
-          bubbles: false,
-          cancelable: false,
-          composed: false,
-        })
-      );
+      if (!!(e.target as any).shadowRoot) {
+        e.stopImmediatePropagation();
+        e.target?.dispatchEvent(
+          new MouseEvent("custom-click", {
+            bubbles: false,
+            cancelable: false,
+            composed: false,
+          })
+        );
+      }
     };
     const listenerBubble = (e: MouseEvent) => {
       console.count("----- shadow root: bubbling -----");
-      console.log(e);
     };
     document.addEventListener("click", listenerCapture, true);
     document.addEventListener("click", listenerBubble);
@@ -29,7 +28,6 @@ export const ShadowRoot: FC<Props> = ({ children }) => {
       "custom-click",
       (e: MouseEvent) => {
         console.count("----- custom-click -----");
-        console.log(e);
       }
     );
 
