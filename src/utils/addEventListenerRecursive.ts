@@ -30,16 +30,18 @@ export const addEventListenerToAllNodes = (
   listener: (event: Event | MouseEvent) => void,
   options?: any
 ): (() => void) => {
+  let unsubscribes: any[] = [];
+
   const addListener = () => {
     nodes.forEach((node: any) => {
-      registerEventListenerRecursive("add", node, type, listener, options);
+      unsubscribes.push(
+        registerEventListenerRecursive(node, type, listener, options)
+      );
     });
   };
 
   const removeListener = () => {
-    nodes.forEach((node: any) => {
-      registerEventListenerRecursive("remove", node, type, listener, options);
-    });
+    unsubscribes.forEach((unsubscribe) => unsubscribe());
   };
 
   addListener();
@@ -53,7 +55,6 @@ export const addEventListenerToAllNodes = (
 };
 
 const registerEventListenerRecursive = (
-  kind: "add" | "remove",
   childNode: any,
   type: string,
   listener: (event: Event | MouseEvent) => void,
@@ -61,19 +62,43 @@ const registerEventListenerRecursive = (
 ) => {
   Array.from(childNode.children as HTMLCollection).forEach((node: any) => {
     if (node.children.length > 0) {
-      if (kind === "add") {
-        (node as ChildNode).addEventListener(type, listener, options);
-      } else {
-        (node as ChildNode).removeEventListener(type, listener, options);
-      }
-      registerEventListenerRecursive(kind, node, type, listener, options);
+      (node as ChildNode).addEventListener(type, listener, options);
+      registerEventListenerRecursive(node, type, listener, options);
     }
     if (node.children.length === 0) {
-      if (kind === "add") {
-        (node as ChildNode).addEventListener(type, listener, options);
-      } else {
-        (node as ChildNode).removeEventListener(type, listener, options);
-      }
+      const key =
+        Object.keys(node).find((key) => key.match(/^__reactProps\$.+$/)) ?? "";
+      const listenerWithEventHandler = (e: any) => {
+        listener(e);
+        node?.[key]?.onClick();
+      };
+      (node as ChildNode).addEventListener(
+        type,
+        listenerWithEventHandler,
+        options
+      );
     }
   });
+  return () => {
+    Array.from(childNode.children as HTMLCollection).forEach((node: any) => {
+      if (node.children.length > 0) {
+        (node as ChildNode).removeEventListener(type, listener, options);
+        registerEventListenerRecursive(node, type, listener, options);
+      }
+      if (node.children.length === 0) {
+        const key =
+          Object.keys(node).find((key) => key.match(/^__reactProps\$.+$/)) ??
+          "";
+        const listenerWithEventHandler = (e: any) => {
+          listener(e);
+          node?.[key]?.onClick();
+        };
+        (node as ChildNode).removeEventListener(
+          type,
+          listenerWithEventHandler,
+          options
+        );
+      }
+    });
+  };
 };

@@ -1,6 +1,8 @@
 import { FC, ReactNode, useEffect, useRef } from "react";
 import { addEventListenerToAllNodes } from "../utils/addEventListenerRecursive";
 
+let didInit = false;
+
 type Props = {
   children: ReactNode;
 };
@@ -9,7 +11,8 @@ export const ShadowRoot: FC<Props> = ({ children }) => {
   useEffect(() => {
     let unsubscribeCapture: any;
     let unsubscribeCustom: any;
-    if (ref.current?.childNodes) {
+    if (!didInit && ref.current?.childNodes) {
+      didInit = true;
       unsubscribeCapture = addEventListenerToAllNodes(
         ref.current?.childNodes,
         "click",
@@ -48,6 +51,6 @@ export const ShadowRoot: FC<Props> = ({ children }) => {
       unsubscribeCapture?.();
       unsubscribeCustom?.();
     };
-  }, [ref]);
+  }, [ref, didInit]);
   return <div ref={ref}>{children}</div>;
 };
