@@ -7,6 +7,9 @@ export const LightRoot: FC<Props> = ({ children }) => {
   useEffect(() => {
     const listenerCapture = (e: MouseEvent) => {
       console.count("----- light root: capturing -----");
+      const paths = e.composedPath();
+      const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
+      console.log({ isShadowDOM });
     };
     const listenerBubble = (e: MouseEvent) => {
       console.count("----- light root: bubbling -----");
