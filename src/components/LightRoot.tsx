@@ -9,7 +9,16 @@ export const LightRoot: FC<Props> = ({ children }) => {
       console.count("----- light root: capturing -----");
       const paths = e.composedPath();
       const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
-      console.log({ isShadowDOM });
+      if (isShadowDOM) {
+        e.stopImmediatePropagation();
+        e.target?.dispatchEvent(
+          new MouseEvent("custom-click", {
+            bubbles: false,
+            cancelable: false,
+            composed: false,
+          })
+        );
+      }
     };
     const listenerBubble = (e: MouseEvent) => {
       console.count("----- light root: bubbling -----");

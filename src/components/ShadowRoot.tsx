@@ -9,32 +9,10 @@ type Props = {
 export const ShadowRoot: FC<Props> = ({ children }) => {
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    let unsubscribeCapture: any;
     let unsubscribeCustom: any;
-    const listener = (e: Event) => {
-      console.count(
-        `----- shadow root: capturing at ${
-          (e.currentTarget as any)?.nodeName
-        } -----`
-      );
-      e.stopImmediatePropagation();
-      e.target?.dispatchEvent(
-        new MouseEvent("custom-click", {
-          bubbles: false,
-          cancelable: false,
-          composed: false,
-        })
-      );
-    };
     if (!didInit && ref.current?.childNodes) {
       const didInitCurrent = didInit;
       didInit = true;
-      ref.current.addEventListener("click", listener, true);
-      unsubscribeCapture = () => {
-        if (didInitCurrent) {
-          ref.current?.removeEventListener("click", listener, true);
-        }
-      };
       unsubscribeCustom = addEventListenerToAllNodes(
         ref.current?.childNodes,
         "custom-click",
@@ -56,7 +34,6 @@ export const ShadowRoot: FC<Props> = ({ children }) => {
 
     return () => {
       console.count("----- clean up -----");
-      unsubscribeCapture?.();
       unsubscribeCustom?.();
     };
   }, [ref, didInit]);
