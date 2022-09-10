@@ -1,34 +1,31 @@
 import { FC, ReactNode, useEffect, useRef } from "react";
 import { addEventListenerToAllNodes } from "../utils/addEventListenerRecursive";
 
-let didInit = false;
-
 type Props = {
   children: ReactNode;
 };
 export const ShadowRoot: FC<Props> = ({ children }) => {
   const ref = useRef<HTMLDivElement | null>(null);
+
+  const listener = (e: Event | MouseEvent) => {
+    if (e.currentTarget === e.target) {
+      console.count(
+        `----- custom-click at ${(e.target as any)?.nodeName} -----`
+      );
+      const node = (e as any).path[0];
+      const key =
+        Object.keys(node).find((key) => key.match(/^__reactProps\$.+$/)) ?? "";
+      node?.[key]?.onClick?.();
+    }
+  };
+
   useEffect(() => {
     let unsubscribeCustom: any;
-    if (!didInit && ref.current?.childNodes) {
-      const didInitCurrent = didInit;
-      didInit = true;
+    if (ref.current?.childNodes) {
       unsubscribeCustom = addEventListenerToAllNodes(
         ref.current?.childNodes,
         "custom-click",
-        (e) => {
-          if (e.currentTarget === e.target) {
-            console.count(
-              `----- custom-click at ${(e.target as any)?.nodeName} -----`
-            );
-            const node = (e as any).path[0];
-            const key =
-              Object.keys(node).find((key) =>
-                key.match(/^__reactProps\$.+$/)
-              ) ?? "";
-            node?.[key]?.onClick?.();
-          }
-        }
+        listener
       );
     }
 
@@ -36,7 +33,7 @@ export const ShadowRoot: FC<Props> = ({ children }) => {
       console.count("----- clean up -----");
       unsubscribeCustom?.();
     };
-  }, [ref, didInit]);
+  }, [ref]);
   return <div ref={ref}>{children}</div>;
 };
 

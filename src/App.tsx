@@ -8,6 +8,36 @@ import { LightRoot } from "./components/LightRoot";
 function App() {
   const [count, setCount] = useState(0);
 
+  const listener = (e: MouseEvent) => {
+    const paths = e.composedPath();
+    const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
+    if (isShadowDOM) {
+      console.log({ paths, isShadowDOM, target: e.target });
+      e.stopImmediatePropagation();
+      paths[0].dispatchEvent(
+        new MouseEvent("custom-click", {
+          bubbles: false,
+          cancelable: false,
+          composed: false,
+        })
+      );
+      // e.target?.dispatchEvent(
+      //   new MouseEvent("custom-click", {
+      //     bubbles: false,
+      //     cancelable: false,
+      //     composed: false,
+      //   })
+      // );
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("click", listener, true);
+    return () => {
+      window.removeEventListener("click", listener, true);
+    };
+  }, []);
+
   return (
     <div className="App">
       <LightRoot>
