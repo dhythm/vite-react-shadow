@@ -14,13 +14,23 @@ function App() {
     if (isShadowDOM) {
       console.log({ paths, isShadowDOM, target: e.target });
       e.stopImmediatePropagation();
-      paths[0].dispatchEvent(
-        new MouseEvent("custom-click", {
-          bubbles: false,
-          cancelable: false,
-          composed: false,
-        })
+      const key =
+        Object.keys(paths[0]).find((key) => key.match(/^__reactProps\$.+$/)) ??
+        "";
+      const reactProps = (paths[0] as any)[key] as any;
+      const handlers = Object.keys(reactProps).filter((key) =>
+        key.match(/^on[A-Z]/)
       );
+      handlers.forEach((handler) => {
+        reactProps[handler]();
+      });
+      // paths[0].dispatchEvent(
+      //   new MouseEvent("custom-click", {
+      //     bubbles: false,
+      //     cancelable: false,
+      //     composed: false,
+      //   })
+      // );
       // e.target?.dispatchEvent(
       //   new MouseEvent("custom-click", {
       //     bubbles: false,
