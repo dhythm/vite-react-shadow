@@ -17,12 +17,6 @@ const listeners: any[] = [];
     ]
   ) => {
     nativeAddEventListener(...args);
-    // const targetType =
-    //   window.self === target
-    //     ? "window"
-    //     : document === target
-    //     ? "document"
-    //     : "element";
     listeners.push({
       target,
       args,
@@ -38,7 +32,6 @@ function App() {
     const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
     if (isShadowDOM) {
       console.log({ paths, isShadowDOM, target: e.target });
-      console.log(listeners);
       e.stopImmediatePropagation();
       const key =
         Object.keys(paths[0]).find((key) => key.match(/^__reactProps\$.+$/)) ??
@@ -67,7 +60,34 @@ function App() {
     }
   };
 
+  const eligibleListeners = listeners
+    .filter((v, i) => {
+      if (window.self === v.target) return false;
+      if (document === v.target) return false;
+      if (listeners.findIndex((u) => v.args[0] === u.args[0]) !== i)
+        return false;
+      return true;
+    })
+    .map(({ target, args }) => args);
+
   useEffect(() => {
+    console.log(eligibleListeners);
+    // eligibleListeners.forEach((v) => {
+    //   if (v.args[0] !== "click") return;
+    //   window.addEventListener(
+    //     v.args[0],
+    //     (e) => {
+    //       const paths = e.composedPath();
+    //       const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
+    //       if (isShadowDOM) {
+    //         e.stopImmediatePropagation();
+    //         console.log(v.args[1]);
+    //         v.args[1](e);
+    //       }
+    //     },
+    //     true
+    //   );
+    // });
     window.addEventListener("click", listener, true);
     return () => {
       window.removeEventListener("click", listener, true);
