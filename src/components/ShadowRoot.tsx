@@ -7,33 +7,33 @@ type Props = {
 export const ShadowRoot: FC<Props> = ({ children }) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
-  const listener = (e: Event | MouseEvent) => {
-    if (e.currentTarget === e.target) {
-      console.count(
-        `----- custom-click at ${(e.target as any)?.nodeName} -----`
-      );
-      const node = (e as any).path[0];
-      const key =
-        Object.keys(node).find((key) => key.match(/^__reactProps\$.+$/)) ?? "";
-      node?.[key]?.onClick?.();
-    }
-  };
+  // const listener = (e: Event | MouseEvent) => {
+  //   if (e.currentTarget === e.target) {
+  //     console.count(
+  //       `----- custom-click at ${(e.target as any)?.nodeName} -----`
+  //     );
+  //     const node = (e as any).path[0];
+  //     const key =
+  //       Object.keys(node).find((key) => key.match(/^__reactProps\$.+$/)) ?? "";
+  //     node?.[key]?.onClick?.();
+  //   }
+  // };
 
-  useEffect(() => {
-    let unsubscribeCustom: any;
-    if (ref.current?.childNodes) {
-      unsubscribeCustom = addEventListenerToAllNodes(
-        ref.current?.childNodes,
-        "custom-click",
-        listener
-      );
-    }
+  // useEffect(() => {
+  //   let unsubscribeCustom: any;
+  //   if (ref.current?.childNodes) {
+  //     unsubscribeCustom = addEventListenerToAllNodes(
+  //       ref.current?.childNodes,
+  //       "custom-click",
+  //       listener
+  //     );
+  //   }
 
-    return () => {
-      console.count("----- clean up -----");
-      unsubscribeCustom?.();
-    };
-  }, [ref]);
+  //   return () => {
+  //     console.count("----- clean up -----");
+  //     unsubscribeCustom?.();
+  //   };
+  // }, [ref]);
   return <div ref={ref}>{children}</div>;
 };
 

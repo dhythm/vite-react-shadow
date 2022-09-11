@@ -1,9 +1,34 @@
-import { useEffect, useState } from "react";
+import { RefCallback, useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import "./App.css";
 import { ShadowDOM } from "./components/ShadowDOM";
 import { ShadowRoot } from "./components/ShadowRoot";
 import { LightRoot } from "./components/LightRoot";
+
+const listeners: any[] = [];
+
+[window, document, Element.prototype].forEach((target) => {
+  const nativeAddEventListener = target.addEventListener;
+  target.addEventListener = (
+    ...args: [
+      string,
+      EventListenerOrEventListenerObject,
+      boolean | AddEventListenerOptions | undefined
+    ]
+  ) => {
+    nativeAddEventListener(...args);
+    // const targetType =
+    //   window.self === target
+    //     ? "window"
+    //     : document === target
+    //     ? "document"
+    //     : "element";
+    listeners.push({
+      target,
+      args,
+    });
+  };
+});
 
 function App() {
   const [count, setCount] = useState(0);
@@ -13,6 +38,7 @@ function App() {
     const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
     if (isShadowDOM) {
       console.log({ paths, isShadowDOM, target: e.target });
+      console.log(listeners);
       e.stopImmediatePropagation();
       const key =
         Object.keys(paths[0]).find((key) => key.match(/^__reactProps\$.+$/)) ??
