@@ -7,7 +7,8 @@ import { LightRoot } from "./components/LightRoot";
 
 const listeners: any[] = [];
 
-[window, document, Element.prototype].forEach((target) => {
+// [window, document, Element.prototype].forEach((target) => {
+[document, Element.prototype].forEach((target) => {
   const nativeAddEventListener = target.addEventListener;
   target.addEventListener = (
     ...args: [
@@ -16,10 +17,12 @@ const listeners: any[] = [];
       boolean | AddEventListenerOptions | undefined
     ]
   ) => {
-    nativeAddEventListener(...args);
+    // nativeAddEventListener(...args);
     listeners.push({
       target,
-      args,
+      type: args[0],
+      handler: args[1],
+      options: args[2],
     });
   };
 });
@@ -31,26 +34,66 @@ function App() {
     const paths = e.composedPath();
     const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
     if (isShadowDOM) {
-      console.log({ paths, isShadowDOM, target: e.target });
+      // console.log({ paths, isShadowDOM, target: e.target });
       e.stopImmediatePropagation();
-      const key =
-        Object.keys(paths[0]).find((key) => key.match(/^__reactProps\$.+$/)) ??
-        "";
-      const reactProps = (paths[0] as any)[key] as any;
-      const handlers = Object.keys(reactProps).filter((key) =>
-        key.match(/^on[A-Z]/)
-      );
-      handlers.forEach((handler) => {
-        reactProps[handler]();
+      const listenersCapturing: any[] = [];
+      const listenersBubbling: any[] = [];
+      paths.reverse().forEach((path) => {
+        if (path === window.self || path === document) {
+          const { target: _t1, ..._listenerCapturing } =
+            listeners.find(
+              (v) =>
+                v.type === "click" && v.target === path && v.options === true
+            ) ?? {};
+          const { target: _t2, ..._listenerBubbling } =
+            listeners.find(
+              (v) =>
+                v.type === "click" && v.target === path && v.options === false
+            ) ?? {};
+          if (!!_t1 && _listenerCapturing)
+            listenersCapturing.push(_listenerCapturing);
+          if (!!_t2 && _listenerBubbling)
+            listenersBubbling.push(_listenerBubbling);
+          return;
+        }
+        const { target: _t1, ..._listenerCapturing } =
+          listeners.find(
+            (v) =>
+              v.type === "click" &&
+              v.target !== window.self &&
+              v.target !== document &&
+              v.options === true
+          ) ?? {};
+        const { target: _t2, ..._listenerBubbling } =
+          listeners.find(
+            (v) =>
+              v.type === "click" &&
+              v.target !== window.self &&
+              v.target !== document &&
+              v.options === false
+          ) ?? {};
+        if (!!_t1 && _listenerCapturing)
+          listenersCapturing.push(_listenerCapturing);
+        if (!!_t2 && _listenerBubbling)
+          listenersBubbling.push(_listenerBubbling);
       });
-      // paths[0].dispatchEvent(
-      //   new MouseEvent("custom-click", {
-      //     bubbles: false,
-      //     cancelable: false,
-      //     composed: false,
-      //   })
+      const _listeners = listenersCapturing
+        .concat(listenersBubbling.reverse())
+        .filter((v) => v);
+      _listeners.forEach((listener) => {
+        listener.handler(e);
+      });
+      // const key =
+      //   Object.keys(paths[0]).find((key) => key.match(/^__reactProps\$.+$/)) ??
+      //   "";
+      // const reactProps = (paths[0] as any)[key] as any;
+      // const handlers = Object.keys(reactProps).filter((key) =>
+      //   key.match(/^on[A-Z]/)
       // );
-      // e.target?.dispatchEvent(
+      // handlers.forEach((handler) => {
+      //   reactProps[handler]();
+      // });
+      // paths[0].dispatchEvent(
       //   new MouseEvent("custom-click", {
       //     bubbles: false,
       //     cancelable: false,
@@ -60,34 +103,7 @@ function App() {
     }
   };
 
-  const eligibleListeners = listeners
-    .filter((v, i) => {
-      if (window.self === v.target) return false;
-      if (document === v.target) return false;
-      if (listeners.findIndex((u) => v.args[0] === u.args[0]) !== i)
-        return false;
-      return true;
-    })
-    .map(({ target, args }) => args);
-
   useEffect(() => {
-    console.log(eligibleListeners);
-    // eligibleListeners.forEach((v) => {
-    //   if (v.args[0] !== "click") return;
-    //   window.addEventListener(
-    //     v.args[0],
-    //     (e) => {
-    //       const paths = e.composedPath();
-    //       const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
-    //       if (isShadowDOM) {
-    //         e.stopImmediatePropagation();
-    //         console.log(v.args[1]);
-    //         v.args[1](e);
-    //       }
-    //     },
-    //     true
-    //   );
-    // });
     window.addEventListener("click", listener, true);
     return () => {
       window.removeEventListener("click", listener, true);
