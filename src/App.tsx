@@ -7,8 +7,8 @@ import { LightRoot } from "./components/LightRoot";
 
 const listeners: any[] = [];
 
-// [window, document, Element.prototype].forEach((target) => {
-[document, Element.prototype].forEach((target) => {
+[window, document, Element.prototype].forEach((target) => {
+  // [document, Element.prototype].forEach((target) => {
   const nativeAddEventListener = target.addEventListener;
   target.addEventListener = (
     ...args: [
@@ -18,71 +18,132 @@ const listeners: any[] = [];
     ]
   ) => {
     // nativeAddEventListener(...args);
-    listeners.push({
-      target,
-      type: args[0],
-      handler: args[1],
-      options: args[2],
-    });
+    nativeAddEventListener(
+      args[0],
+      (e) => {
+        const paths = e.composedPath();
+        const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
+        if (!isShadowDOM) {
+          (args[1] as any)(e);
+          return;
+        }
+        e.stopImmediatePropagation();
+        if (e.type === "click") {
+          console.count("----- click event -----");
+        }
+
+        listeners.push({
+          target,
+          event: e,
+          type: args[0],
+          handler: args[1],
+          options: args[2],
+        });
+      },
+      args[2]
+    );
+    // listeners.push({
+    //   target,
+    //   type: args[0],
+    //   handler: args[1],
+    //   options: args[2],
+    // });
   };
 });
 
 function App() {
   const [count, setCount] = useState(0);
 
+  const rootDocument = document.getElementById("root");
   const listener = (e: MouseEvent) => {
     const paths = e.composedPath();
     const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
     if (isShadowDOM) {
-      // console.log({ paths, isShadowDOM, target: e.target });
       e.stopImmediatePropagation();
-      const listenersCapturing: any[] = [];
-      const listenersBubbling: any[] = [];
-      paths.reverse().forEach((path) => {
-        if (path === window.self || path === document) {
-          const { target: _t1, ..._listenerCapturing } =
-            listeners.find(
-              (v) =>
-                v.type === "click" && v.target === path && v.options === true
-            ) ?? {};
-          const { target: _t2, ..._listenerBubbling } =
-            listeners.find(
-              (v) =>
-                v.type === "click" && v.target === path && v.options === false
-            ) ?? {};
-          if (!!_t1 && _listenerCapturing)
-            listenersCapturing.push(_listenerCapturing);
-          if (!!_t2 && _listenerBubbling)
-            listenersBubbling.push(_listenerBubbling);
-          return;
-        }
-        const { target: _t1, ..._listenerCapturing } =
-          listeners.find(
-            (v) =>
-              v.type === "click" &&
-              v.target !== window.self &&
-              v.target !== document &&
-              v.options === true
-          ) ?? {};
-        const { target: _t2, ..._listenerBubbling } =
-          listeners.find(
-            (v) =>
-              v.type === "click" &&
-              v.target !== window.self &&
-              v.target !== document &&
-              v.options === false
-          ) ?? {};
-        if (!!_t1 && _listenerCapturing)
-          listenersCapturing.push(_listenerCapturing);
-        if (!!_t2 && _listenerBubbling)
-          listenersBubbling.push(_listenerBubbling);
-      });
-      const _listeners = listenersCapturing
-        .concat(listenersBubbling.reverse())
-        .filter((v) => v);
-      _listeners.forEach((listener) => {
-        listener.handler(e);
-      });
+
+      console.log({ e });
+      console.log({ paths });
+      console.log({ listeners });
+      // console.log(listeners.filter((v) => v.event.type === "click"));
+      listeners
+        .filter((v) => v.event.type === "click")
+        .forEach((v) => {
+          console.log(v);
+          // v.handler(v.event);
+        });
+      // paths[7].dispatchEvent(new Event("click", { bubbles: false }));
+      // paths.forEach((path) => {
+      //   path.dispatchEvent(new Event("click", { bubbles: false }));
+      // });
+      // listeners
+      //   .find(
+      //     (v) =>
+      //       v.target !== window.self &&
+      //       v.target !== document &&
+      //       v.type === "click" &&
+      //       !v.options
+      //   )
+      //   ?.handler(e);
+      // target?.addEventListener(
+      //   "click",
+      //   listeners.find(
+      //     (v) =>
+      //       v.target !== window.self &&
+      //       v.target !== document &&
+      //       v.type === "click" &&
+      //       v.options === false
+      //   )
+      // );
+      // target?.dispatchEvent(new Event("click", { bubbles: false }));
+
+      // const listenersCapturing: any[] = [];
+      // const listenersBubbling: any[] = [];
+      // paths.reverse().forEach((path) => {
+      //   if (path === window.self || path === document) {
+      //     const { target: _t1, ..._listenerCapturing } =
+      //       listeners.find(
+      //         (v) =>
+      //           v.type === "click" && v.target === path && v.options === true
+      //       ) ?? {};
+      //     const { target: _t2, ..._listenerBubbling } =
+      //       listeners.find(
+      //         (v) =>
+      //           v.type === "click" && v.target === path && v.options === false
+      //       ) ?? {};
+      //     if (!!_t1 && _listenerCapturing)
+      //       listenersCapturing.push(_listenerCapturing);
+      //     if (!!_t2 && _listenerBubbling)
+      //       listenersBubbling.push(_listenerBubbling);
+      //     return;
+      //   }
+      //   const { target: _t1, ..._listenerCapturing } =
+      //     listeners.find(
+      //       (v) =>
+      //         v.type === "click" &&
+      //         v.target !== window.self &&
+      //         v.target !== document &&
+      //         v.options === true
+      //     ) ?? {};
+      //   const { target: _t2, ..._listenerBubbling } =
+      //     listeners.find(
+      //       (v) =>
+      //         v.type === "click" &&
+      //         v.target !== window.self &&
+      //         v.target !== document &&
+      //         v.options === false
+      //     ) ?? {};
+      //   if (!!_t1 && _listenerCapturing)
+      //     listenersCapturing.push(_listenerCapturing);
+      //   if (!!_t2 && _listenerBubbling)
+      //     listenersBubbling.push(_listenerBubbling);
+      // });
+      // const _listeners = listenersCapturing
+      //   .concat(listenersBubbling.reverse())
+      //   .filter((v) => v);
+      // _listeners.forEach((listener) => {
+      //   listener.handler(e);
+      // });
+
       // const key =
       //   Object.keys(paths[0]).find((key) => key.match(/^__reactProps\$.+$/)) ??
       //   "";
