@@ -5,72 +5,66 @@ import { ShadowDOM } from "./components/ShadowDOM";
 import { ShadowRoot } from "./components/ShadowRoot";
 import { LightRoot } from "./components/LightRoot";
 
-const listeners: any[] = [];
+// const listeners: any[] = [];
 
-[window, document, Element.prototype].forEach((target) => {
-  // [document, Element.prototype].forEach((target) => {
-  const nativeAddEventListener = target.addEventListener;
-  target.addEventListener = (
-    ...args: [
-      string,
-      EventListenerOrEventListenerObject,
-      boolean | AddEventListenerOptions | undefined
-    ]
-  ) => {
-    // nativeAddEventListener(...args);
-    nativeAddEventListener(
-      args[0],
-      (e) => {
-        const paths = e.composedPath();
-        const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
-        if (!isShadowDOM) {
-          (args[1] as any)(e);
-          return;
-        }
-        e.stopImmediatePropagation();
-        if (e.type === "click") {
-          console.count("----- click event -----");
-        }
+// [window, document, Element.prototype].forEach((target) => {
+//   const nativeAddEventListener = target.addEventListener;
+//   target.addEventListener = (
+//     ...args: [
+//       string,
+//       EventListenerOrEventListenerObject,
+//       boolean | AddEventListenerOptions | undefined
+//     ]
+//   ) => {
+//     // nativeAddEventListener(...args);
+//     nativeAddEventListener(
+//       args[0],
+//       (e) => {
+//         const paths = e.composedPath();
+//         const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
+//         if (!isShadowDOM) {
+//           (args[1] as any)(e);
+//           return;
+//         }
+//         e.stopImmediatePropagation();
+//         if (e.type === "click") {
+//           paths.reverse().forEach((path) => {
+//             path.dispatchEvent(new Event("click", { bubbles: false }));
+//           });
+//           console.count("----- click event -----");
+//         }
 
-        listeners.push({
-          target,
-          event: e,
-          type: args[0],
-          handler: args[1],
-          options: args[2],
-        });
-      },
-      args[2]
-    );
-    // listeners.push({
-    //   target,
-    //   type: args[0],
-    //   handler: args[1],
-    //   options: args[2],
-    // });
-  };
-});
+//         listeners.push({
+//           target,
+//           event: e,
+//           type: args[0],
+//           handler: args[1],
+//           options: args[2],
+//         });
+//       },
+//       args[2]
+//     );
+//     // listeners.push({
+//     //   target,
+//     //   type: args[0],
+//     //   handler: args[1],
+//     //   options: args[2],
+//     // });
+//   };
+// });
 
 function App() {
   const [count, setCount] = useState(0);
 
-  const rootDocument = document.getElementById("root");
   const listener = (e: MouseEvent) => {
     const paths = e.composedPath();
     const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
     if (isShadowDOM) {
-      e.stopImmediatePropagation();
-
-      console.log({ e });
-      console.log({ paths });
-      console.log({ listeners });
+      // e.stopImmediatePropagation();
+      // console.log({ e });
+      // console.log({ paths });
+      // console.log({ listeners });
       // console.log(listeners.filter((v) => v.event.type === "click"));
-      listeners
-        .filter((v) => v.event.type === "click")
-        .forEach((v) => {
-          console.log(v);
-          // v.handler(v.event);
-        });
       // paths[7].dispatchEvent(new Event("click", { bubbles: false }));
       // paths.forEach((path) => {
       //   path.dispatchEvent(new Event("click", { bubbles: false }));
@@ -95,7 +89,6 @@ function App() {
       //   )
       // );
       // target?.dispatchEvent(new Event("click", { bubbles: false }));
-
       // const listenersCapturing: any[] = [];
       // const listenersBubbling: any[] = [];
       // paths.reverse().forEach((path) => {
@@ -143,7 +136,6 @@ function App() {
       // _listeners.forEach((listener) => {
       //   listener.handler(e);
       // });
-
       // const key =
       //   Object.keys(paths[0]).find((key) => key.match(/^__reactProps\$.+$/)) ??
       //   "";
@@ -164,12 +156,12 @@ function App() {
     }
   };
 
-  useEffect(() => {
-    window.addEventListener("click", listener, true);
-    return () => {
-      window.removeEventListener("click", listener, true);
-    };
-  }, []);
+  // useEffect(() => {
+  //   window.addEventListener("click", listener, true);
+  //   return () => {
+  //     window.removeEventListener("click", listener, true);
+  //   };
+  // }, []);
 
   return (
     <div className="App">
