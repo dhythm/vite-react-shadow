@@ -20,37 +20,24 @@ export const listeners: any[] = [];
   ) {
     this.addEventListener = nativeAddEventListener;
     // this.addEventListener(...args);
-    console.log(args);
     // this.addEventListener(
     //   args[0],
     //   (e) => {
     //     const paths = e.composedPath();
     //     const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
+    //     console.log({ e, isShadowDOM });
     //     if (!isShadowDOM) {
-    //       (args[1] as any)(e);
     //       return;
     //     }
-    //     if (e.type === "click") {
-    //       console.log({
-    //         target,
-    //         event: e,
-    //         type: args[0],
-    //         handler: args[1],
-    //         options: args[2],
-    //       });
-    //     }
-    //     e.stopImmediatePropagation();
-
-    //     listeners.push({
-    //       target,
-    //       event: e,
-    //       type: args[0],
-    //       handler: args[1],
-    //       options: args[2],
-    //     });
     //   },
     //   args[2]
     // );
+    console.log(args);
+    listeners.push({
+      type: args[0],
+      handler: args[1],
+      options: args[2],
+    });
   };
   // target.addEventListener = (
   //   ...args: [
@@ -92,8 +79,6 @@ export const listeners: any[] = [];
   //   //   args[2]
   //   // );
   // };
-  console.log({ nativeAddEventListener });
-  console.log({ pollutedAddEventListener: target.addEventListener });
 });
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
