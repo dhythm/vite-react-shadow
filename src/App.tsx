@@ -4,6 +4,7 @@ import "./App.css";
 import { ShadowDOM } from "./components/ShadowDOM";
 import { ShadowRoot } from "./components/ShadowRoot";
 import { LightRoot } from "./components/LightRoot";
+import { listeners } from "./main";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -13,90 +14,7 @@ function App() {
     const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
     if (isShadowDOM) {
       e.stopImmediatePropagation();
-      // listeners
-      //   .find(
-      //     (v) =>
-      //       v.target !== window.self &&
-      //       v.target !== document &&
-      //       v.type === "click" &&
-      //       !v.options
-      //   )
-      //   ?.handler(e);
-      // target?.addEventListener(
-      //   "click",
-      //   listeners.find(
-      //     (v) =>
-      //       v.target !== window.self &&
-      //       v.target !== document &&
-      //       v.type === "click" &&
-      //       v.options === false
-      //   )
-      // );
-      // target?.dispatchEvent(new Event("click", { bubbles: false }));
-      // const listenersCapturing: any[] = [];
-      // const listenersBubbling: any[] = [];
-      // paths.reverse().forEach((path) => {
-      //   if (path === window.self || path === document) {
-      //     const { target: _t1, ..._listenerCapturing } =
-      //       listeners.find(
-      //         (v) =>
-      //           v.type === "click" && v.target === path && v.options === true
-      //       ) ?? {};
-      //     const { target: _t2, ..._listenerBubbling } =
-      //       listeners.find(
-      //         (v) =>
-      //           v.type === "click" && v.target === path && v.options === false
-      //       ) ?? {};
-      //     if (!!_t1 && _listenerCapturing)
-      //       listenersCapturing.push(_listenerCapturing);
-      //     if (!!_t2 && _listenerBubbling)
-      //       listenersBubbling.push(_listenerBubbling);
-      //     return;
-      //   }
-      //   const { target: _t1, ..._listenerCapturing } =
-      //     listeners.find(
-      //       (v) =>
-      //         v.type === "click" &&
-      //         v.target !== window.self &&
-      //         v.target !== document &&
-      //         v.options === true
-      //     ) ?? {};
-      //   const { target: _t2, ..._listenerBubbling } =
-      //     listeners.find(
-      //       (v) =>
-      //         v.type === "click" &&
-      //         v.target !== window.self &&
-      //         v.target !== document &&
-      //         v.options === false
-      //     ) ?? {};
-      //   if (!!_t1 && _listenerCapturing)
-      //     listenersCapturing.push(_listenerCapturing);
-      //   if (!!_t2 && _listenerBubbling)
-      //     listenersBubbling.push(_listenerBubbling);
-      // });
-      // const _listeners = listenersCapturing
-      //   .concat(listenersBubbling.reverse())
-      //   .filter((v) => v);
-      // _listeners.forEach((listener) => {
-      //   listener.handler(e);
-      // });
-      // const key =
-      //   Object.keys(paths[0]).find((key) => key.match(/^__reactProps\$.+$/)) ??
-      //   "";
-      // const reactProps = (paths[0] as any)[key] as any;
-      // const handlers = Object.keys(reactProps).filter((key) =>
-      //   key.match(/^on[A-Z]/)
-      // );
-      // handlers.forEach((handler) => {
-      //   reactProps[handler]();
-      // });
-      // paths[0].dispatchEvent(
-      //   new MouseEvent("custom-click", {
-      //     bubbles: false,
-      //     cancelable: false,
-      //     composed: false,
-      //   })
-      // );
+      console.log({ listeners });
     }
   };
 
