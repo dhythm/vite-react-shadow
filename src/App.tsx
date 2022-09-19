@@ -13,15 +13,19 @@ function App() {
     const paths = e.composedPath();
     const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
     if (isShadowDOM) {
-      e.stopImmediatePropagation();
       console.log({ listeners });
+      e.stopImmediatePropagation();
     }
   };
 
   useEffect(() => {
-    window.addEventListener("click", listener, true);
+    listeners.forEach((_listener) => {
+      window.addEventListener(_listener.type, listener, true);
+    });
     return () => {
-      window.removeEventListener("click", listener, true);
+      listeners.forEach((_listener) => {
+        window.removeEventListener(_listener.type, listener, true);
+      });
     };
   }, []);
 
