@@ -40,9 +40,6 @@ export const listeners: any[] = [];
             options: args[2],
           });
           handler = function (event: any) {
-            // if (event.type?.endswith("click")) {
-            //   console.log({ event, args });
-            // }
             if (event.type === "react-click") {
               console.log({ event, args });
             }
