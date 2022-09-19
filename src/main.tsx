@@ -21,22 +21,19 @@ export const listeners: any[] = [];
       let handler = args[1];
       if (typeof args[1] === "function") {
         if (
-          !listeners.find((v) =>
-            deepEqual(
+          !listeners.find((v) => {
+            return deepEqual(
               {
                 type: v.type,
-                // handler: v.handler,
                 options: v.options,
               },
               {
                 type: args[0],
-                // handler: args[1],
                 options: args[2],
               }
-            )
-          )
+            );
+          })
         ) {
-          console.count("debug");
           console.log({
             type: args[0],
             handler: args[1],
@@ -47,35 +44,14 @@ export const listeners: any[] = [];
           };
           listeners.push({
             type: args[0],
-            handler: args[1],
+            // handler: args[1],
+            handler,
             options: args[2],
           });
         }
       }
-      // nativeRemoveEventListener.call(this, args[0], handler, args[2]);
+      // nativeRemoveEventListener.call(this, args[0], args[1], args[2]);
       nativeAddEventListener.call(this, args[0], handler, args[2]);
-      //   let handler = args[1];
-      //   if (typeof args[1] === "function") {
-      //     const _handler = args[1];
-      //     handler = (event: any) => {
-      //       if (
-      //         !listeners.find(
-      //           (listener) =>
-      //             listener.type === args[0] &&
-      //             // listener.handler === args[1] &&
-      //             listener.options === args[2]
-      //         )
-      //       ) {
-      //         console.log({ event });
-      //         listeners.push({
-      //           type: args[0],
-      //           handler: args[1],
-      //           options: args[2],
-      //         });
-      //       }
-      //       _handler(event);
-      //     };
-      //   }
 
       //   // https://gist.github.com/pmuellr/854959
       //   // nativeAddEventListener.apply(this, args);
