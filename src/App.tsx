@@ -19,15 +19,16 @@ function App() {
   };
 
   useEffect(() => {
-    listeners.forEach((_listener) => {
-      window.addEventListener(_listener.type, listener, true);
-    });
-    return () => {
-      listeners.forEach((_listener) => {
-        window.removeEventListener(_listener.type, listener, true);
-      });
-    };
-  }, []);
+    // listeners.forEach((_listener) => {
+    //   window.addEventListener(_listener.type, listener, true);
+    // });
+    // return () => {
+    //   listeners.forEach((_listener) => {
+    //     window.removeEventListener(_listener.type, listener, true);
+    //   });
+    // };
+    console.log({ listeners });
+  }, [listeners]);
 
   return (
     <div className="App">

@@ -18,21 +18,32 @@ export const listeners: any[] = [];
         boolean | AddEventListenerOptions | undefined
       ]
     ) {
+      if (typeof args[1] === "function") {
+        const listener = args[1];
+        args[1] = (event: any) => {
+          if (
+            !listeners.find(
+              (listener) =>
+                listener.type === args[0] &&
+                listener.handler === args[1] &&
+                listener.options === args[2]
+            )
+          ) {
+            listeners.push({
+              type: args[0],
+              handler: args[1],
+              options: args[2],
+            });
+          }
+          listener(event);
+        };
+      }
+
+      // https://gist.github.com/pmuellr/854959
+      nativeAddEventListener.apply(this, args);
+
       // https://jsfiddle.net/tomas1000r/RDW7F/
       this.addEventListener = nativeAddEventListener;
-      this.addEventListener(
-        args[0],
-        (e) => {
-          console.log({ e });
-        },
-        args[2]
-      );
-      console.log(args);
-      listeners.push({
-        type: args[0],
-        handler: args[1],
-        options: args[2],
-      });
     };
   }
 );
