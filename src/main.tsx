@@ -7,7 +7,6 @@ export const listeners: any[] = [];
 
 [window, document, Element.prototype, EventTarget.prototype].forEach(
   (eventTarget) => {
-    // [window, document, document.documentElement].forEach(function (eventTarget) {
     const target = document.getElementById("root");
     let listenerObjectsByType = new Map();
     let findListenerIndex = function findListenerIndex(
@@ -28,7 +27,6 @@ export const listeners: any[] = [];
           return i;
         }
       }
-
       return -1;
     };
 
@@ -44,8 +42,6 @@ export const listeners: any[] = [];
       ]
     ) {
       let listenerObjects = listenerObjectsByType.get(args[0]);
-      console.log({ ...args });
-
       if (!listenerObjects) {
         listenerObjects = [];
         listenerObjectsByType.set(args[0], listenerObjects);
@@ -65,15 +61,9 @@ export const listeners: any[] = [];
           ) {
             return;
           }
-          if (event.type === "react-click") {
-            console.log({ event, ...args });
-          }
           args[1].call(event.currentTarget, event);
         };
 
-        // nativeRemoveEventListener.call(eventTarget, args[0], args[1], args[2]);
-        // nativeAddEventListener.call(eventTarget, args[0], _handler, args[2]);
-        // nativeRemoveEventListener.call(this, args[0], args[1], args[2]);
         nativeAddEventListener.call(this, args[0], _handler, args[2]);
 
         const listenerObject = {
@@ -84,51 +74,6 @@ export const listeners: any[] = [];
         };
         listenerObjects.push(listenerObject);
       }
-
-      // let handler = args[1];
-      // if (typeof args[1] === "function") {
-      //   if (
-      //     !listeners.find((v) => {
-      //       return deepEqual(
-      //         {
-      //           type: v.type,
-      //           options: v.options,
-      //         },
-      //         {
-      //           type: args[0],
-      //           options: args[2],
-      //         }
-      //       );
-      //     })
-      //   ) {
-      //     console.log({
-      //       type: args[0],
-      //       handler: args[1],
-      //       options: args[2],
-      //     });
-      //     handler = function (event: any) {
-      //       if (event.type === "react-click") {
-      //         console.log({ event, args });
-      //       }
-      //       (args[1] as any)(event);
-      //     };
-      //     listeners.push({
-      //       type: args[0],
-      //       // handler: args[1],
-      //       handler,
-      //       options: args[2],
-      //     });
-      //   }
-      // }
-      // // nativeRemoveEventListener.call(this, args[0], args[1], args[2]);
-      // nativeAddEventListener.call(this, args[0], handler, args[2]);
-
-      //   // https://gist.github.com/pmuellr/854959
-      //   // nativeAddEventListener.apply(this, args);
-      //   nativeAddEventListener.call(this, args[0], handler, args[2]);
-
-      //   // https://jsfiddle.net/tomas1000r/RDW7F/
-      //   // this.addEventListener = nativeAddEventListener;
     };
 
     eventTarget.removeEventListener = function (
@@ -145,7 +90,6 @@ export const listeners: any[] = [];
         options: args[2],
       });
 
-      console.log({ ...args, listenerIndex });
       if (listenerIndex !== -1) {
         removeEventListener.call(
           eventTarget,
@@ -155,7 +99,7 @@ export const listeners: any[] = [];
         );
         listenerObjects.splice(listenerIndex, 1);
       } else {
-        // removeEventListener.call(eventTarget, args[0], args[1], args[2]);
+        removeEventListener.call(eventTarget, args[0], args[1], args[2]);
       }
     };
   }
