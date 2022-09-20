@@ -13,22 +13,9 @@ function App() {
     const paths = e.composedPath();
     const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
     if (isShadowDOM) {
-      console.log({ listeners });
       e.stopImmediatePropagation();
     }
   };
-
-  useEffect(() => {
-    // listeners.forEach((_listener) => {
-    //   window.addEventListener(_listener.type, listener, true);
-    // });
-    // return () => {
-    //   listeners.forEach((_listener) => {
-    //     window.removeEventListener(_listener.type, listener, true);
-    //   });
-    // };
-    console.log({ listeners });
-  }, [listeners]);
 
   return (
     <div className="App">

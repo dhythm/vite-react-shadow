@@ -8,8 +8,8 @@ export const listeners: any[] = [];
 [window, document, Element.prototype, EventTarget.prototype].forEach(
   (eventTarget) => {
     const target = document.getElementById("root");
-    let listenerObjectsByType = new Map();
-    let findListenerIndex = function findListenerIndex(
+    const listenerObjectsByType = new Map();
+    const findListenerIndex = function findListenerIndex(
       listenerObjects: any,
       args: any
     ) {
