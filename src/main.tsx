@@ -44,6 +44,7 @@ export const listeners: any[] = [];
       ]
     ) {
       let listenerObjects = listenerObjectsByType.get(args[0]);
+      console.log({ ...args });
 
       if (!listenerObjects) {
         listenerObjects = [];
@@ -64,12 +65,15 @@ export const listeners: any[] = [];
           ) {
             return;
           }
+          if (event.type === "react-click") {
+            console.log({ event, ...args });
+          }
           args[1].call(event.currentTarget, event);
         };
 
         // nativeRemoveEventListener.call(eventTarget, args[0], args[1], args[2]);
         // nativeAddEventListener.call(eventTarget, args[0], _handler, args[2]);
-        nativeRemoveEventListener.call(this, args[0], args[1], args[2]);
+        // nativeRemoveEventListener.call(this, args[0], args[1], args[2]);
         nativeAddEventListener.call(this, args[0], _handler, args[2]);
 
         const listenerObject = {
@@ -80,33 +84,6 @@ export const listeners: any[] = [];
         };
         listenerObjects.push(listenerObject);
       }
-
-      // eventTarget.removeEventListener = function (
-      //   ...args: [
-      //     string,
-      //     EventListener,
-      //     boolean | AddEventListenerOptions | undefined
-      //   ]
-      // ) {
-      //   const listenerObjects = listenerObjectsByType.get(args[0]) || [];
-      //   const listenerIndex = findListenerIndex(listenerObjects, {
-      //     type: args[0],
-      //     handler: args[1],
-      //     options: args[2],
-      //   });
-
-      //   if (listenerIndex !== -1) {
-      //     removeEventListener.call(
-      //       eventTarget,
-      //       args[0],
-      //       listenerObjects[listenerIndex]._handler,
-      //       args[2]
-      //     );
-      //     listenerObjects.splice(listenerIndex, 1);
-      //   } else {
-      //     removeEventListener.call(eventTarget, args[0], args[1], args[2]);
-      //   }
-      // };
 
       // let handler = args[1];
       // if (typeof args[1] === "function") {
@@ -152,6 +129,34 @@ export const listeners: any[] = [];
 
       //   // https://jsfiddle.net/tomas1000r/RDW7F/
       //   // this.addEventListener = nativeAddEventListener;
+    };
+
+    eventTarget.removeEventListener = function (
+      ...args: [
+        string,
+        EventListener,
+        boolean | AddEventListenerOptions | undefined
+      ]
+    ) {
+      const listenerObjects = listenerObjectsByType.get(args[0]) || [];
+      const listenerIndex = findListenerIndex(listenerObjects, {
+        type: args[0],
+        handler: args[1],
+        options: args[2],
+      });
+
+      console.log({ ...args, listenerIndex });
+      if (listenerIndex !== -1) {
+        removeEventListener.call(
+          eventTarget,
+          args[0],
+          listenerObjects[listenerIndex]._handler,
+          args[2]
+        );
+        listenerObjects.splice(listenerIndex, 1);
+      } else {
+        // removeEventListener.call(eventTarget, args[0], args[1], args[2]);
+      }
     };
   }
 );
