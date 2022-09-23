@@ -41,21 +41,21 @@ function App() {
         <p className="read-the-docs">
           Click on the Vite and React logos to learn more
         </p>
-        <ShadowDOM>
-          <ShadowRoot>
-            <div>
-              <div>
-                <button onClick={() => setCountInShadow((count) => count + 1)}>
-                  shadow Button
-                </button>
-              </div>
-              <div>
-                <p style={{ color: "#ffffff" }}>{countInShadow}</p>
-              </div>
-            </div>
-          </ShadowRoot>
-        </ShadowDOM>
       </LightRoot>
+      <ShadowDOM>
+        <ShadowRoot>
+          <div>
+            <div>
+              <button onClick={() => setCountInShadow((count) => count + 1)}>
+                shadow Button
+              </button>
+            </div>
+            <div>
+              <p style={{ color: "#ffffff" }}>{countInShadow}</p>
+            </div>
+          </div>
+        </ShadowRoot>
+      </ShadowDOM>
     </div>
   );
 }
