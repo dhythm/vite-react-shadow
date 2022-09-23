@@ -5,30 +5,52 @@ import "./index.css";
 
 export const listeners: any[] = [];
 
+function findListenerIndex(listenerObjects: any, args: any) {
+  for (var i = 0; i < listenerObjects.length; i++) {
+    if (
+      deepEqual(
+        {
+          type: listenerObjects[i].type,
+          handler: listenerObjects[i].handler,
+          options: listenerObjects[i].options,
+        },
+        args
+      )
+    ) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 [window, document, Element.prototype, EventTarget.prototype].forEach(
   (eventTarget) => {
     const target = document.getElementById("root");
     const listenerObjectsByType = new Map();
-    const findListenerIndex = function findListenerIndex(
-      listenerObjects: any,
-      args: any
-    ) {
-      for (var i = 0; i < listenerObjects.length; i++) {
-        if (
-          deepEqual(
-            {
-              type: listenerObjects[i].type,
-              handler: listenerObjects[i].handler,
-              options: listenerObjects[i].options,
-            },
-            args
-          )
-        ) {
-          return i;
-        }
-      }
-      return -1;
-    };
+    // const findListenerIndex = function findListenerIndex(
+    //   listenerObjects: any,
+    //   args: [
+    //     string,
+    //     EventListener,
+    //     boolean | AddEventListenerOptions | undefined
+    //   ]
+    // ) {
+    //   for (var i = 0; i < listenerObjects.length; i++) {
+    //     if (
+    //       deepEqual(
+    //         {
+    //           type: listenerObjects[i].type,
+    //           handler: listenerObjects[i].handler,
+    //           options: listenerObjects[i].options,
+    //         },
+    //         args
+    //       )
+    //     ) {
+    //       return i;
+    //     }
+    //   }
+    //   return -1;
+    // };
 
     const nativeAddEventListener = eventTarget.addEventListener;
     const nativeRemoveEventListener = eventTarget.removeEventListener;
@@ -53,7 +75,7 @@ export const listeners: any[] = [];
         options: args[2],
       });
       if (listenerIndex === -1) {
-        let _handler = function _handler(event: any) {
+        const _handler = function _handler(event: any) {
           if (
             event.eventPhase === event.CAPTURING_PHASE &&
             target &&
@@ -61,7 +83,10 @@ export const listeners: any[] = [];
           ) {
             return;
           }
-          args[1].call(event.currentTarget, event);
+          if (event.isTrusted) {
+            args[1].call(event.currentTarget, event);
+          }
+          // args[1].call(event.currentTarget, event);
         };
 
         nativeAddEventListener.call(this, args[0], _handler, args[2]);
@@ -98,8 +123,6 @@ export const listeners: any[] = [];
           args[2]
         );
         listenerObjects.splice(listenerIndex, 1);
-      } else {
-        removeEventListener.call(eventTarget, args[0], args[1], args[2]);
       }
     };
   }
