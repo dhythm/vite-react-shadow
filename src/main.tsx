@@ -27,30 +27,6 @@ function findListenerIndex(listenerObjects: any, args: any) {
   (eventTarget) => {
     const target = document.getElementById("root");
     const listenerObjectsByType = new Map();
-    // const findListenerIndex = function findListenerIndex(
-    //   listenerObjects: any,
-    //   args: [
-    //     string,
-    //     EventListener,
-    //     boolean | AddEventListenerOptions | undefined
-    //   ]
-    // ) {
-    //   for (var i = 0; i < listenerObjects.length; i++) {
-    //     if (
-    //       deepEqual(
-    //         {
-    //           type: listenerObjects[i].type,
-    //           handler: listenerObjects[i].handler,
-    //           options: listenerObjects[i].options,
-    //         },
-    //         args
-    //       )
-    //     ) {
-    //       return i;
-    //     }
-    //   }
-    //   return -1;
-    // };
 
     const nativeAddEventListener = eventTarget.addEventListener;
     const nativeRemoveEventListener = eventTarget.removeEventListener;
@@ -84,9 +60,22 @@ function findListenerIndex(listenerObjects: any, args: any) {
             return;
           }
           if (event.isTrusted) {
+            const paths = event.composedPath();
+            const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
+            if (isShadowDOM) {
+              event.stopImmediatePropagation();
+              const listenerObjects: {
+                type: string;
+                handler: EventListener;
+                options: boolean | AddEventListenerOptions | undefined;
+                _handler: EventListener;
+              }[] = listenerObjectsByType.get(event.type);
+              const listenerBubbling = listenerObjects.find((v) => !v.options);
+              listenerBubbling?.handler(event);
+              return;
+            }
             args[1].call(event.currentTarget, event);
           }
-          // args[1].call(event.currentTarget, event);
         };
 
         nativeAddEventListener.call(this, args[0], _handler, args[2]);

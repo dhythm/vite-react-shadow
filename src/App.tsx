@@ -7,7 +7,8 @@ import { LightRoot } from "./components/LightRoot";
 import { listeners } from "./main";
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [countInLight, setCountInLight] = useState(0);
+  const [countInShadow, setCountInShadow] = useState(0);
 
   const listener = (e: MouseEvent) => {
     const paths = e.composedPath();
@@ -30,8 +31,8 @@ function App() {
         </div>
         <h1>Vite + React</h1>
         <div className="card">
-          <button onClick={() => setCount((count) => count + 1)}>
-            count is {count}
+          <button onClick={() => setCountInLight((count) => count + 1)}>
+            count is {countInLight}
           </button>
           <p>
             Edit <code>src/App.tsx</code> and save to test HMR
@@ -44,16 +45,12 @@ function App() {
           <ShadowRoot>
             <div>
               <div>
-                <button
-                  onClick={(e) => {
-                    console.log("clicked");
-                  }}
-                >
+                <button onClick={() => setCountInShadow((count) => count + 1)}>
                   shadow Button
                 </button>
               </div>
               <div>
-                <p>Hello</p>
+                <p style={{ color: "#ffffff" }}>{countInShadow}</p>
               </div>
             </div>
           </ShadowRoot>
