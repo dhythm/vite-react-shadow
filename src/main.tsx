@@ -23,10 +23,18 @@ function findListenerIndex(listenerObjects: any, args: any) {
   return -1;
 }
 
+type ListenerObject = {
+  type: string;
+  handler: EventListener;
+  _handler: EventListener;
+  options: boolean | AddEventListenerOptions | undefined;
+};
+
+const listenerObjectsByType: Map<string, ListenerObject[]> = new Map();
+
 [window, document, Element.prototype, EventTarget.prototype].forEach(
   (eventTarget) => {
     const target = document.getElementById("root");
-    const listenerObjectsByType = new Map();
 
     const nativeAddEventListener = eventTarget.addEventListener;
     const nativeRemoveEventListener = eventTarget.removeEventListener;
@@ -64,13 +72,8 @@ function findListenerIndex(listenerObjects: any, args: any) {
             const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
             if (isShadowDOM) {
               event.stopImmediatePropagation();
-              const listenerObjects: {
-                type: string;
-                handler: EventListener;
-                options: boolean | AddEventListenerOptions | undefined;
-                _handler: EventListener;
-              }[] = listenerObjectsByType.get(event.type);
-              const listenerBubbling = listenerObjects.find((v) => !v.options);
+              const listenerObjects = listenerObjectsByType.get(event.type);
+              const listenerBubbling = listenerObjects?.find((v) => !v.options);
               listenerBubbling?.handler(event);
               return;
             }
