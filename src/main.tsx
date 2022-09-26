@@ -28,11 +28,10 @@ type ListenerObject = {
   options: boolean | AddEventListenerOptions | undefined;
 };
 
-const listenerObjectsByType: Map<string, ListenerObject[]> = new Map();
-
 [window, document, Element.prototype, EventTarget.prototype].forEach(
   (eventTarget) => {
     const target = document.getElementById("root");
+    const listenerObjectsByType: Map<string, ListenerObject[]> = new Map();
 
     const nativeAddEventListener = eventTarget.addEventListener;
     const nativeRemoveEventListener = eventTarget.removeEventListener;
@@ -84,8 +83,6 @@ const listenerObjectsByType: Map<string, ListenerObject[]> = new Map();
                 listenersInCapturing.forEach((listener) => {
                   listener.handler(event);
                 });
-              }
-              if (event.eventPhase === event.BUBBLING_PHASE) {
                 listenersInBubbling.forEach((listener) => {
                   listener.handler(event);
                 });
