@@ -3,8 +3,6 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-export const listeners: any[] = [];
-
 function findListenerIndex(listenerObjects: any, args: any) {
   for (var i = 0; i < listenerObjects.length; i++) {
     if (
@@ -73,8 +71,25 @@ const listenerObjectsByType: Map<string, ListenerObject[]> = new Map();
             if (isShadowDOM) {
               event.stopImmediatePropagation();
               const listenerObjects = listenerObjectsByType.get(event.type);
-              const listenerBubbling = listenerObjects?.find((v) => !v.options);
-              listenerBubbling?.handler(event);
+              if (!listenerObjects) return;
+
+              const listenersInCapturing = listenerObjects.filter(
+                (listenerObject) => listenerObject.options === true
+              );
+              const listenersInBubbling = listenerObjects.filter(
+                (listenerObject) => !listenerObject.options
+              );
+
+              if (event.eventPhase === event.CAPTURING_PHASE) {
+                listenersInCapturing.forEach((listener) => {
+                  listener.handler(event);
+                });
+              }
+              if (event.eventPhase === event.BUBBLING_PHASE) {
+                listenersInBubbling.forEach((listener) => {
+                  listener.handler(event);
+                });
+              }
               return;
             }
             args[1].call(event.currentTarget, event);
