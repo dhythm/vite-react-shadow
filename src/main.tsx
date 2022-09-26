@@ -21,17 +21,21 @@ function findListenerIndex(listenerObjects: any, args: any) {
   return -1;
 }
 
+const listenerObjectsByType: Map<string, ListenerObject[]> = new Map();
+
 type ListenerObject = {
+  eventTarget: any;
   type: string;
   handler: EventListener;
-  _handler: EventListener;
   options: boolean | AddEventListenerOptions | undefined;
+  _handler: EventListener;
+  nativeAddEventListener: any;
 };
 
 [window, document, Element.prototype, EventTarget.prototype].forEach(
   (eventTarget) => {
     const target = document.getElementById("root");
-    const listenerObjectsByType: Map<string, ListenerObject[]> = new Map();
+    // const listenerObjectsByType: Map<string, ListenerObject[]> = new Map();
 
     const nativeAddEventListener = eventTarget.addEventListener;
     const nativeRemoveEventListener = eventTarget.removeEventListener;
@@ -96,10 +100,12 @@ type ListenerObject = {
         nativeAddEventListener.call(this, args[0], _handler, args[2]);
 
         const listenerObject = {
+          eventTarget: this,
           type: args[0],
           handler: args[1],
           options: args[2],
           _handler,
+          nativeAddEventListener,
         };
         listenerObjects.push(listenerObject);
       }
