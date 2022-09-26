@@ -51,7 +51,7 @@ function App() {
               </button>
             </div>
             <div>
-              <p style={{ color: "#ffffff" }}>{countInShadow}</p>
+              <p style={{ color: "#888888" }}>{countInShadow}</p>
             </div>
           </div>
         </ShadowRoot>
