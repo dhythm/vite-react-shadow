@@ -1,9 +1,11 @@
-import { FC, ReactNode, useEffect } from "react";
+import { FC, ReactNode, useEffect, useState } from "react";
 
 type Props = {
   children: ReactNode;
 };
 export const LightRoot: FC<Props> = ({ children }) => {
+  const [ref, setRef] = useState<HTMLDivElement | null>(null);
+
   useEffect(() => {
     const listenerCapture = (e: MouseEvent) => {
       console.count("----- light root: capturing -----");
@@ -18,5 +20,25 @@ export const LightRoot: FC<Props> = ({ children }) => {
       document.removeEventListener("click", listenerBubble);
     };
   }, []);
-  return <>{children}</>;
+
+  useEffect(() => {
+    const listenerCapture = (e: MouseEvent) => {
+      console.count("----- light root(ref): capturing -----");
+    };
+    const listenerBubble = (e: MouseEvent) => {
+      console.count("----- light root(ref): bubbling -----");
+    };
+    if (ref) {
+      ref.addEventListener("click", listenerCapture, true);
+      ref.addEventListener("click", listenerBubble);
+    }
+    return () => {
+      if (ref) {
+        ref.addEventListener("click", listenerCapture, true);
+        ref.addEventListener("click", listenerBubble);
+      }
+    };
+  }, [ref]);
+
+  return <div ref={setRef}>{children}</div>;
 };
