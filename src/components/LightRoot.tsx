@@ -6,6 +6,8 @@ type Props = {
 export const LightRoot: FC<Props> = ({ children }) => {
   const [ref, setRef] = useState<HTMLDivElement | null>(null);
 
+  // This event listener will be called when the button in Shadow DOM is clicked,
+  // because the paths include window/document and handler is invoked forcefully.
   useEffect(() => {
     const listenerCapture = (e: MouseEvent) => {
       console.count("----- light root: capturing -----");
