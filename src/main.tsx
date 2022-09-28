@@ -3,7 +3,103 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-function findListenerIndex(listenerObjects: any, args: any) {
+// react > DOMEventNames.js
+const eventTypes = [
+  "abort",
+  "afterblur",
+  "beforeblur",
+  "beforeinput",
+  "blur",
+  "canplay",
+  "canplaythrough",
+  "cancel",
+  "change",
+  "click",
+  "close",
+  "compositionend",
+  "compositionstart",
+  "compositionupdate",
+  "contextmenu",
+  "copy",
+  "cut",
+  "dblclick",
+  "auxclick",
+  "drag",
+  "dragend",
+  "dragenter",
+  "dragexit",
+  "dragleave",
+  "dragover",
+  "dragstart",
+  "drop",
+  "durationchange",
+  "emptied",
+  "encrypted",
+  "ended",
+  "error",
+  "focus",
+  "focusin",
+  "focusout",
+  "fullscreenchange",
+  "gotpointercapture",
+  "hashchange",
+  "input",
+  "invalid",
+  "keydown",
+  "keypress",
+  "keyup",
+  "load",
+  "loadstart",
+  "loadeddata",
+  "loadedmetadata",
+  "lostpointercapture",
+  "message",
+  "mousedown",
+  "mouseenter",
+  "mouseleave",
+  "mousemove",
+  "mouseout",
+  "mouseover",
+  "mouseup",
+  "paste",
+  "pause",
+  "play",
+  "playing",
+  "pointercancel",
+  "pointerdown",
+  "pointerenter",
+  "pointerleave",
+  "pointermove",
+  "pointerout",
+  "pointerover",
+  "pointerup",
+  "popstate",
+  "progress",
+  "ratechange",
+  "reset",
+  "resize",
+  "scroll",
+  "seeked",
+  "seeking",
+  "select",
+  "selectstart",
+  "selectionchange",
+  "stalled",
+  "submit",
+  "suspend",
+  "textInput",
+  "timeupdate",
+  "toggle",
+  "touchcancel",
+  "touchend",
+  "touchmove",
+  "touchstart",
+  "volumechange",
+  "waiting",
+  "wheel",
+];
+
+function findListenerIndex(listenerObjects: ListenerObject[], args: any) {
   for (var i = 0; i < listenerObjects.length; i++) {
     if (
       deepEqual(
@@ -21,37 +117,128 @@ function findListenerIndex(listenerObjects: any, args: any) {
   return -1;
 }
 
-const listenerObjectsByType: Map<string, ListenerObject[]> = new Map();
+function AdaptedEvent(event: Event) {
+  // TODO: shadowDOMの中かどうかによってtargetを正しく変える
+  const newTarget = event.composedPath()[0];
+  return {
+    get: (target: Event, prop: keyof Event) => {
+      const property = target[prop];
+      if (typeof property === "function") {
+        return property.bind(event);
+      } else if (prop === "target") {
+        return newTarget ? newTarget : event.target;
+      }
+      return target[prop];
+    },
+  };
+}
 
 type ListenerObject = {
-  eventTarget: any;
   type: string;
   handler: EventListener;
   options: boolean | AddEventListenerOptions | undefined;
-  _handler: EventListener;
-  nativeAddEventListener: any;
 };
+
+type ListenerObjectByEventTarget = Map<EventTarget, ListenerObject[]>;
+type ListenerObjectByType = Map<string, ListenerObjectByEventTarget>;
+
+const listenerObjectsByType: ListenerObjectByType = new Map();
+
+eventTypes.forEach((eventType) => {
+  window.addEventListener(
+    eventType,
+    (event) => {
+      const listenerObjects = listenerObjectsByType.get(eventType);
+      if (!listenerObjects) return;
+
+      const paths = event.composedPath();
+      const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
+      if (!isShadowDOM) {
+        [...paths].reverse().forEach((path) => {
+          listenerObjects
+            .get(path)
+            ?.filter(
+              (listenerObject) =>
+                listenerObject.options === true ||
+                (typeof listenerObject.options === "object" &&
+                  listenerObject.options.capture)
+            )
+            .forEach((listener) => {
+              listener.handler.call(path, event);
+            });
+        });
+        paths.forEach((path) => {
+          listenerObjects
+            .get(path)
+            ?.filter(
+              (listenerObject) =>
+                !listenerObject.options ||
+                (typeof listenerObject.options === "object" &&
+                  !listenerObject.options.capture)
+            )
+            .forEach((listener) => {
+              listener.handler.call(path, event);
+            });
+        });
+        return;
+      }
+      event.stopImmediatePropagation();
+      const proxyEvent = new Proxy(event, new AdaptedEvent(event));
+      [...paths].reverse().forEach((path) => {
+        listenerObjects
+          .get(path)
+          ?.filter(
+            (listenerObject) =>
+              listenerObject.options === true ||
+              (typeof listenerObject.options === "object" &&
+                listenerObject.options.capture)
+          )
+          .forEach((listener) => {
+            listener.handler.call(path, proxyEvent);
+          });
+      });
+      paths.forEach((path) => {
+        listenerObjects
+          .get(path)
+          ?.filter(
+            (listenerObject) =>
+              !listenerObject.options ||
+              (typeof listenerObject.options === "object" &&
+                !listenerObject.options.capture)
+          )
+          .forEach((listener) => {
+            listener.handler.call(path, proxyEvent);
+          });
+      });
+    },
+    true
+  );
+});
 
 [window, document, Element.prototype, EventTarget.prototype].forEach(
   (eventTarget) => {
-    const target = document.getElementById("root");
-    // const listenerObjectsByType: Map<string, ListenerObject[]> = new Map();
-
     const nativeAddEventListener = eventTarget.addEventListener;
     const nativeRemoveEventListener = eventTarget.removeEventListener;
-
     eventTarget.addEventListener = function (
       ...args: [
         string,
-        // EventListenerOrEventListenerObject,
         EventListener,
         boolean | AddEventListenerOptions | undefined
       ]
     ) {
-      let listenerObjects = listenerObjectsByType.get(args[0]);
+      if (!eventTypes.includes(args[0])) {
+        return nativeAddEventListener.call(this, ...args);
+      }
+      let listenerObjectsByEventTarget = listenerObjectsByType.get(args[0]);
+      if (!listenerObjectsByEventTarget) {
+        listenerObjectsByEventTarget = new Map();
+        listenerObjectsByType.set(args[0], listenerObjectsByEventTarget);
+      }
+
+      let listenerObjects = listenerObjectsByEventTarget.get(this);
       if (!listenerObjects) {
         listenerObjects = [];
-        listenerObjectsByType.set(args[0], listenerObjects);
+        listenerObjectsByEventTarget.set(this, listenerObjects);
       }
 
       let listenerIndex = findListenerIndex(listenerObjects, {
@@ -60,52 +247,10 @@ type ListenerObject = {
         options: args[2],
       });
       if (listenerIndex === -1) {
-        const _handler = function _handler(event: any) {
-          if (
-            event.eventPhase === event.CAPTURING_PHASE &&
-            target &&
-            contains(target, event.target)
-          ) {
-            return;
-          }
-          if (event.isTrusted) {
-            const paths = event.composedPath();
-            const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
-            if (isShadowDOM) {
-              event.stopImmediatePropagation();
-              const listenerObjects = listenerObjectsByType.get(event.type);
-              if (!listenerObjects) return;
-
-              const listenersInCapturing = listenerObjects.filter(
-                (listenerObject) => listenerObject.options === true
-              );
-              const listenersInBubbling = listenerObjects.filter(
-                (listenerObject) => !listenerObject.options
-              );
-
-              if (event.eventPhase === event.CAPTURING_PHASE) {
-                listenersInCapturing.forEach((listener) => {
-                  listener.handler(event);
-                });
-                listenersInBubbling.forEach((listener) => {
-                  listener.handler(event);
-                });
-              }
-              return;
-            }
-            args[1].call(event.currentTarget, event);
-          }
-        };
-
-        nativeAddEventListener.call(this, args[0], _handler, args[2]);
-
         const listenerObject = {
-          eventTarget: this,
           type: args[0],
           handler: args[1],
           options: args[2],
-          _handler,
-          nativeAddEventListener,
         };
         listenerObjects.push(listenerObject);
       }
@@ -118,20 +263,19 @@ type ListenerObject = {
         boolean | AddEventListenerOptions | undefined
       ]
     ) {
-      const listenerObjects = listenerObjectsByType.get(args[0]) || [];
+      if (!eventTypes.includes(args[0])) {
+        return nativeRemoveEventListener.call(this, ...args);
+      }
+      const listenerObjectsByEventTarget = listenerObjectsByType.get(args[0]);
+      if (!listenerObjectsByEventTarget) return;
+      const listenerObjects = listenerObjectsByEventTarget.get(this);
+      if (!listenerObjects) return;
       const listenerIndex = findListenerIndex(listenerObjects, {
         type: args[0],
         handler: args[1],
         options: args[2],
       });
-
       if (listenerIndex !== -1) {
-        removeEventListener.call(
-          eventTarget,
-          args[0],
-          listenerObjects[listenerIndex]._handler,
-          args[2]
-        );
         listenerObjects.splice(listenerIndex, 1);
       }
     };
