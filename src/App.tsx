@@ -1,12 +1,13 @@
-import { RefCallback, useEffect, useState } from "react";
-import reactLogo from "./assets/react.svg";
+import { useState } from "react";
 import "./App.css";
-import { ShadowDOM } from "./components/ShadowDOM";
+import reactLogo from "./assets/react.svg";
 import { LightRoot } from "./components/LightRoot";
+import { ShadowDOM } from "./components/ShadowDOM";
 
 function App() {
   const [countInLight, setCountInLight] = useState(0);
   const [countInShadow, setCountInShadow] = useState(0);
+  const [countInShadowDeep, setCountInShadowDeep] = useState(0);
 
   return (
     <div className="App">
@@ -41,10 +42,10 @@ function App() {
         </div>
         <div>
           <ShadowDOM>
-            <button onClick={() => setCountInShadow((count) => count + 1)}>
+            <button onClick={() => setCountInShadowDeep((count) => count + 1)}>
               shadow Button
             </button>
-            <p style={{ color: "#888888" }}>{countInShadow}</p>
+            <p style={{ color: "#888888" }}>{countInShadowDeep}</p>
           </ShadowDOM>
         </div>
       </ShadowDOM>
