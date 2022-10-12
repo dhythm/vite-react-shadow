@@ -2,21 +2,11 @@ import { RefCallback, useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import "./App.css";
 import { ShadowDOM } from "./components/ShadowDOM";
-import { ShadowRoot } from "./components/ShadowRoot";
 import { LightRoot } from "./components/LightRoot";
-import { listeners } from "./main";
 
 function App() {
   const [countInLight, setCountInLight] = useState(0);
   const [countInShadow, setCountInShadow] = useState(0);
-
-  const listener = (e: MouseEvent) => {
-    const paths = e.composedPath();
-    const isShadowDOM = paths.some((path: any) => path?.shadowRoot);
-    if (isShadowDOM) {
-      e.stopImmediatePropagation();
-    }
-  };
 
   return (
     <div className="App">
@@ -43,18 +33,20 @@ function App() {
         </p>
       </LightRoot>
       <ShadowDOM>
-        <ShadowRoot>
-          <div>
-            <div>
-              <button onClick={() => setCountInShadow((count) => count + 1)}>
-                shadow Button
-              </button>
-            </div>
-            <div>
-              <p style={{ color: "#888888" }}>{countInShadow}</p>
-            </div>
-          </div>
-        </ShadowRoot>
+        <div>
+          <button onClick={() => setCountInShadow((count) => count + 1)}>
+            shadow Button
+          </button>
+          <p style={{ color: "#888888" }}>{countInShadow}</p>
+        </div>
+        <div>
+          <ShadowDOM>
+            <button onClick={() => setCountInShadow((count) => count + 1)}>
+              shadow Button
+            </button>
+            <p style={{ color: "#888888" }}>{countInShadow}</p>
+          </ShadowDOM>
+        </div>
       </ShadowDOM>
     </div>
   );
