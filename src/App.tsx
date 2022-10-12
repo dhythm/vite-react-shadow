@@ -43,7 +43,7 @@ function App() {
         <div>
           <ShadowDOM>
             <button onClick={() => setCountInShadowDeep((count) => count + 1)}>
-              shadow Button
+              nested shadow Button
             </button>
             <p style={{ color: "#888888" }}>{countInShadowDeep}</p>
           </ShadowDOM>
